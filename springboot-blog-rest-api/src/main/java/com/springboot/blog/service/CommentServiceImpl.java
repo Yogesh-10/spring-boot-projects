@@ -7,6 +7,7 @@ import com.springboot.blog.exception.ResourceNotFoundException;
 import com.springboot.blog.payload.CommentDTO;
 import com.springboot.blog.repository.CommentRepository;
 import com.springboot.blog.repository.PostRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,11 +20,13 @@ import java.util.stream.Collectors;
 public class CommentServiceImpl implements CommentService{
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public CommentServiceImpl(CommentRepository commentRepository, PostRepository postRepository) {
+    public CommentServiceImpl(CommentRepository commentRepository, PostRepository postRepository, ModelMapper modelMapper) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
+        this.modelMapper = modelMapper;
     }
 
     @Override
@@ -49,7 +52,7 @@ public class CommentServiceImpl implements CommentService{
     @Override
     public CommentDTO getCommentById(Long postId, Long commentId) {
         Comment comment = checkIfCommentBelongsToPost(postId, commentId);
-
+        System.out.println(comment);
         return convertEntityToDTO(comment);
     }
 
@@ -86,14 +89,10 @@ public class CommentServiceImpl implements CommentService{
     }
 
     private CommentDTO convertEntityToDTO(Comment comment){
-        CommentDTO commentDTO = new CommentDTO();
-        BeanUtils.copyProperties(comment, commentDTO);
-        return commentDTO;
+        return modelMapper.map(comment, CommentDTO.class);
     }
 
     private Comment convertDTOToEntity(CommentDTO commentDTO){
-        Comment comment = new Comment();
-        BeanUtils.copyProperties(commentDTO, comment);
-        return comment;
+        return modelMapper.map(commentDTO, Comment.class);
     }
 }

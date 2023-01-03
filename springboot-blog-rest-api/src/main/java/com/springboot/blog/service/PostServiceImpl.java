@@ -5,6 +5,7 @@ import com.springboot.blog.exception.ResourceNotFoundException;
 import com.springboot.blog.payload.PostDTO;
 import com.springboot.blog.payload.PostResponseDTO;
 import com.springboot.blog.repository.PostRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,10 +20,12 @@ import java.util.stream.Collectors;
 @Service
 public class PostServiceImpl implements PostService{
     private final PostRepository postRepository;
+    private final ModelMapper modelMapper;
 
     @Autowired //from spring 4.3, if the class is a spring bean and has only field to inject, @Autowired can be omitted
-    public PostServiceImpl(PostRepository postRepository) {
+    public PostServiceImpl(PostRepository postRepository, ModelMapper modelMapper) {
         this.postRepository = postRepository;
+        this.modelMapper = modelMapper;
     }
 
     @Override
@@ -104,22 +107,17 @@ public class PostServiceImpl implements PostService{
     }
 
     private PostDTO convertEntityToDTO(Post post){
-        PostDTO postDTO = new PostDTO();
+/*      PostDTO postDTO = new PostDTO();
         postDTO.setId(post.getId());
         postDTO.setTitle(post.getTitle());
         postDTO.setDescription(post.getDescription());
         postDTO.setContent(post.getContent());
-
-        return postDTO;
+        postDTO.setComments(post.getComments());
+ */     //instead of using above steps to convert entity to dto, use modelMapper
+        return modelMapper.map(post, PostDTO.class);
     }
 
     private Post convertDTOToEntity(PostDTO postDTO){
-        Post post = new Post();
-        post.setId(postDTO.getId());
-        post.setTitle(postDTO.getTitle());
-        post.setDescription(postDTO.getDescription());
-        post.setContent(postDTO.getContent());
-
-        return post;
+        return modelMapper.map(postDTO, Post.class);
     }
 }
