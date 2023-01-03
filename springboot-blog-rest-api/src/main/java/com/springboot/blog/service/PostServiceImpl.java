@@ -3,8 +3,13 @@ package com.springboot.blog.service;
 import com.springboot.blog.entity.Post;
 import com.springboot.blog.exception.ResourceNotFoundException;
 import com.springboot.blog.payload.PostDTO;
+import com.springboot.blog.payload.PostResponseDTO;
 import com.springboot.blog.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,11 +33,36 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public List<PostDTO> getAllPosts() {
-        List<Post> allPosts = postRepository.findAll();
-        return allPosts.stream()
+    public PostResponseDTO getAllPosts(int pageNo, int pageSize, String sortBy, String sortDir) {
+        //pagination and sorting
+
+        //dynamically set sorting based on sortDir
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+
+        //set pageNo, pageSize and sortBy to a pageable object
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+        //pass pageable object to findAll method, returns a Page<Post>
+        Page<Post> posts = postRepository.findAll(pageable);
+        //use getContent method to convert Page<Post> to List<Post>
+        List<Post> postList = posts.getContent();
+
+        //convert post entity to postDTO to return response
+        List<PostDTO> postDTOS = postList.stream()
                 .map(post -> convertEntityToDTO(post))
                 .collect(Collectors.toList());
+
+        //PostDTO response, to send extra info to client such as totalPages, pageNo, pageSize, lastPage, etc.
+        //Page<Post> has default methods, such as getNumber, getSize. we can use it to set as page response
+        PostResponseDTO postResponseDTO = new PostResponseDTO();
+        postResponseDTO.setContent(postDTOS);
+        postResponseDTO.setPageNo(posts.getNumber());
+        postResponseDTO.setPageSize(posts.getSize());
+        postResponseDTO.setTotalElements(posts.getTotalElements());
+        postResponseDTO.setTotalPages(posts.getTotalPages());
+        postResponseDTO.setLastPage(posts.isLast());
+
+        return postResponseDTO;
     }
 
     @Override
