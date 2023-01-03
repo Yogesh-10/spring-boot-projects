@@ -69,7 +69,6 @@ public class PostServiceImpl implements PostService{
     public PostDTO getPost(Long id) {
         Post post = postRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("post", "id", id));
-
         return convertEntityToDTO(post);
     }
 
