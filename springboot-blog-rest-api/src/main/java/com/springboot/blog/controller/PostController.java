@@ -22,8 +22,8 @@ public class PostController {
         this.postService = postService;
     }
 
-    @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping
     public ResponseEntity<PostDTO> createPost(@Valid @RequestBody PostDTO postDTO){
         PostDTO createdPost = postService.createPost(postDTO);
         return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
@@ -45,15 +45,15 @@ public class PostController {
         return new ResponseEntity<>(postDTO, HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
     public ResponseEntity<PostDTO> updatePost(@PathVariable Long id, @Valid @RequestBody PostDTO postDTO){
         PostDTO post = postService.updatePost(id, postDTO);
         return new ResponseEntity<>(post, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deletePost(@PathVariable Long id){
         postService.deletePost(id);
         return new ResponseEntity<>("Post with id " + id + " deleted successfully",
