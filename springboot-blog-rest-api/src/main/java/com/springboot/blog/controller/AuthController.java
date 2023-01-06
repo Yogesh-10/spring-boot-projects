@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager) {
@@ -28,7 +28,7 @@ public class AuthController {
     public ResponseEntity<String> authenticateUser(@RequestBody LoginDTO loginDTO){
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginDTO.getUsernameOrEmail(), loginDTO.getPassword()));
-        System.out.println("done");
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
         return new ResponseEntity<>("User logged in successfully", HttpStatus.OK);
     }
