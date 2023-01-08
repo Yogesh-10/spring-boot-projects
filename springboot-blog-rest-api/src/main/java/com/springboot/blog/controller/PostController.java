@@ -11,12 +11,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/posts")
 public class PostController {
-    private final PostService postService;
+    private PostService postService;
 
     @Autowired
     public PostController(PostService postService) {
@@ -59,11 +58,5 @@ public class PostController {
         postService.deletePost(id);
         return new ResponseEntity<>("Post with id " + id + " deleted successfully",
                 HttpStatus.OK);
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<List<PostDTO>> searchPosts(@RequestParam(value = "query", defaultValue = "", required = false) String query){
-        List<PostDTO> postDTOS = postService.searchPosts(query, query);
-        return new ResponseEntity<>(postDTOS, HttpStatus.OK);
     }
 }
