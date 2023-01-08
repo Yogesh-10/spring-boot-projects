@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class PostServiceImpl implements PostService{
-    private PostRepository postRepository;
-    private ModelMapper modelMapper;
+    private final PostRepository postRepository;
+    private final ModelMapper modelMapper;
 
     @Autowired //from spring 4.3, if the class is a spring bean and has only constructor, @Autowired can be omitted
     public PostServiceImpl(PostRepository postRepository, ModelMapper modelMapper) {
@@ -104,6 +104,16 @@ public class PostServiceImpl implements PostService{
                 new ResourceNotFoundException("post", "id", id));
 
         postRepository.delete(post);
+    }
+
+    @Override
+    public List<PostDTO> searchPosts(String title, String description) {
+        List<Post> posts = postRepository
+                .searchPostByTitleContainingOrDescriptionContaining(title, description);
+
+        return posts.stream()
+                .map(post -> convertEntityToDTO(post))
+                .collect(Collectors.toList());
     }
 
     private PostDTO convertEntityToDTO(Post post){
