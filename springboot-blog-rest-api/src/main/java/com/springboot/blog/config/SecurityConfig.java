@@ -42,8 +42,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
-    //By default spring security authorizes all resources and has a default user with username:user and password printed in console
-    //To configure and customise this behaviour, override the configure(HttpSecurity http) method to customize the http request such as formbased or basichttp,
+    //By default, spring security authorizes all resources and has a default user with username:user and password printed in console
+    //To configure and customise this behaviour, override the - configure(HttpSecurity http) method to customise the http request such as formBased or basicHTTP,
     //and also to authorize only the provided url, either to all users or based on role
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -56,15 +56,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) //because jwt is stateless
                 .and()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.GET,"/api/**").permitAll()
+                .antMatchers(HttpMethod.GET,"/api/**").permitAll() //for rest apis
                 .antMatchers("/api/auth/**").permitAll()
+                .antMatchers("/v2/api-docs/**").permitAll() //for swagger docs
+                .antMatchers("/swagger-ui/**").permitAll()
+                .antMatchers("/swagger-resources/**").permitAll()
+                .antMatchers("/swagger-ui.html").permitAll()
+                .antMatchers("/webjars/**").permitAll()
                 .anyRequest()
                 .authenticated();
         //configure spring security to use authenticationFilter(jwt)
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
-    //In a real application we dont want inmemory users, we need real users from DB, so instead of using default UserDetailsService provided by spring security,
+    //In a real application we don't want in-memory users, we need real users from DB, so instead of using default UserDetailsService provided by spring security,
     //we can create our CustomUserDetailsService and tell spring security configuration to use our CustomUserDetailsService by overriding configure(AuthenticationManagerBuilder auth)
     //and provide the type of passwordEncoder to be used.
     @Override
@@ -82,7 +87,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
-    //By default spring security has only one user with username user, we can add multiple inmemory users using UserDetailsService provided by spring security
+    //By default, spring security has only one user with username user, we can add multiple in-memory users using UserDetailsService provided by spring security
     //override userDetailsService() method and build users and return InMemoryUserDetailsManager object to create users in spring security
 /*  @Override
     @Bean
