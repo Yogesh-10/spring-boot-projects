@@ -49,7 +49,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public APIResponseDto getEmployeeById(Long employeeId) {
-
+        System.out.println("employee service");
         Employee employee = employeeRepository.findById(employeeId).get();
 
         //RestTemplate
