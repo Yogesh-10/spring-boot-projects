@@ -2,19 +2,18 @@ package com.yogesh.employeeservice.service.impl;
 
 import com.yogesh.employeeservice.dto.APIResponseDto;
 import com.yogesh.employeeservice.dto.EmployeeDto;
+import com.yogesh.employeeservice.dto.OrganizationDto;
 import com.yogesh.employeeservice.entity.Employee;
 import com.yogesh.employeeservice.mapper.EmployeeMapper;
 import com.yogesh.employeeservice.repository.EmployeeRepository;
-import com.yogesh.employeeservice.service.APIClient;
+import com.yogesh.employeeservice.service.DepartmentAPIClient;
 import com.yogesh.employeeservice.service.EmployeeService;
+import com.yogesh.employeeservice.service.OrganizationAPIClient;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
 import lombok.AllArgsConstructor;
 import com.yogesh.employeeservice.dto.DepartmentDto;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
@@ -26,7 +25,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 //    private RestTemplate restTemplate;
 //    private WebClient webClient;
-    private APIClient apiClient;
+    private DepartmentAPIClient departmentApiClient;
+    private OrganizationAPIClient organizationAPIClient;
 
     @Override
     public EmployeeDto saveEmployee(EmployeeDto employeeDto) {
@@ -42,7 +42,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public APIResponseDto getEmployeeById(Long employeeId) {
         log.info("getEmployeeById()");
-
         Employee employee = employeeRepository.findById(employeeId).get();
 
         //RestTemplate
@@ -51,7 +50,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         DepartmentDto departmentDto = responseEntity.getBody();
  */
-
         //WebClient
 /*      DepartmentDto departmentDto = webClient.get()
                 .uri("http://localhost:8080/api/departments/" + employee.getDepartmentCode())
@@ -59,14 +57,15 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .bodyToMono(DepartmentDto.class)
                 .block();
 */
-
-        DepartmentDto departmentDto = apiClient.getDepartment(employee.getDepartmentCode());
+        DepartmentDto departmentDto = departmentApiClient.getDepartment(employee.getDepartmentCode());
+        OrganizationDto organizationDto = organizationAPIClient.getOrganizationByCode(employee.getOrganizationCode());
 
         EmployeeDto employeeDto = EmployeeMapper.mapToEmployeeDto(employee);
 
         APIResponseDto apiResponseDto = new APIResponseDto();
         apiResponseDto.setEmployee(employeeDto);
         apiResponseDto.setDepartment(departmentDto);
+        apiResponseDto.setOrganization(organizationDto);
 
         return apiResponseDto;
     }
