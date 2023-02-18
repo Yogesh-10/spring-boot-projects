@@ -6,8 +6,11 @@ import com.yogesh.employeeservice.entity.Employee;
 import com.yogesh.employeeservice.repository.EmployeeRepository;
 import com.yogesh.employeeservice.service.APIClient;
 import com.yogesh.employeeservice.service.EmployeeService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.AllArgsConstructor;
 import com.yogesh.employeeservice.dto.DepartmentDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -15,6 +18,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class EmployeeServiceImpl implements EmployeeService {
 
     private EmployeeRepository employeeRepository;
@@ -47,9 +51,12 @@ public class EmployeeServiceImpl implements EmployeeService {
         return savedEmployeeDto;
     }
 
+    @CircuitBreaker(name = "${spring.application.name}", fallbackMethod = "getDefaultDepartment") //circuit breaker pattern
+//    @Retry(name = "${spring.application.name}", fallbackMethod = "getDefaultDepartment") //retry pattern
     @Override
     public APIResponseDto getEmployeeById(Long employeeId) {
-        System.out.println("employee service");
+        log.info("getEmployeeById()");
+
         Employee employee = employeeRepository.findById(employeeId).get();
 
         //RestTemplate
@@ -81,6 +88,31 @@ public class EmployeeServiceImpl implements EmployeeService {
         apiResponseDto.setEmployee(employeeDto);
         apiResponseDto.setDepartment(departmentDto);
 
+        return apiResponseDto;
+    }
+
+
+    public APIResponseDto getDefaultDepartment(Long employeeId, Exception exception) {
+        log.info("getDefaultDepartment()");
+
+        Employee employee = employeeRepository.findById(employeeId).get();
+
+        DepartmentDto departmentDto = new DepartmentDto();
+        departmentDto.setDepartmentName("R&D Department");
+        departmentDto.setDepartmentCode("RD001");
+        departmentDto.setDepartmentDescription("Research and Development Department");
+
+        EmployeeDto employeeDto = new EmployeeDto(
+                employee.getId(),
+                employee.getFirstName(),
+                employee.getLastName(),
+                employee.getEmail(),
+                employee.getDepartmentCode()
+        );
+
+        APIResponseDto apiResponseDto = new APIResponseDto();
+        apiResponseDto.setEmployee(employeeDto);
+        apiResponseDto.setDepartment(departmentDto);
         return apiResponseDto;
     }
 }
