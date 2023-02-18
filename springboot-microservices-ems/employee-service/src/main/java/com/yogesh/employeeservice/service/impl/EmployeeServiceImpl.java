@@ -3,6 +3,7 @@ package com.yogesh.employeeservice.service.impl;
 import com.yogesh.employeeservice.dto.APIResponseDto;
 import com.yogesh.employeeservice.dto.EmployeeDto;
 import com.yogesh.employeeservice.entity.Employee;
+import com.yogesh.employeeservice.mapper.EmployeeMapper;
 import com.yogesh.employeeservice.repository.EmployeeRepository;
 import com.yogesh.employeeservice.service.APIClient;
 import com.yogesh.employeeservice.service.EmployeeService;
@@ -29,26 +30,11 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmployeeDto saveEmployee(EmployeeDto employeeDto) {
+        Employee employee = EmployeeMapper.mapToEmployee(employeeDto);
 
-        Employee employee = new Employee(
-                employeeDto.getId(),
-                employeeDto.getFirstName(),
-                employeeDto.getLastName(),
-                employeeDto.getEmail(),
-                employeeDto.getDepartmentCode()
-        );
+        Employee savedEmployee = employeeRepository.save(employee);
 
-        Employee saveDEmployee = employeeRepository.save(employee);
-
-        EmployeeDto savedEmployeeDto = new EmployeeDto(
-                saveDEmployee.getId(),
-                saveDEmployee.getFirstName(),
-                saveDEmployee.getLastName(),
-                saveDEmployee.getEmail(),
-                saveDEmployee.getDepartmentCode()
-        );
-
-        return savedEmployeeDto;
+        return EmployeeMapper.mapToEmployeeDto(savedEmployee);
     }
 
     @CircuitBreaker(name = "${spring.application.name}", fallbackMethod = "getDefaultDepartment") //circuit breaker pattern
@@ -76,13 +62,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         DepartmentDto departmentDto = apiClient.getDepartment(employee.getDepartmentCode());
 
-        EmployeeDto employeeDto = new EmployeeDto(
-                employee.getId(),
-                employee.getFirstName(),
-                employee.getLastName(),
-                employee.getEmail(),
-                employee.getDepartmentCode()
-        );
+        EmployeeDto employeeDto = EmployeeMapper.mapToEmployeeDto(employee);
 
         APIResponseDto apiResponseDto = new APIResponseDto();
         apiResponseDto.setEmployee(employeeDto);
@@ -90,7 +70,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         return apiResponseDto;
     }
-
 
     public APIResponseDto getDefaultDepartment(Long employeeId, Exception exception) {
         log.info("getDefaultDepartment()");
@@ -102,13 +81,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         departmentDto.setDepartmentCode("RD001");
         departmentDto.setDepartmentDescription("Research and Development Department");
 
-        EmployeeDto employeeDto = new EmployeeDto(
-                employee.getId(),
-                employee.getFirstName(),
-                employee.getLastName(),
-                employee.getEmail(),
-                employee.getDepartmentCode()
-        );
+        EmployeeDto employeeDto = EmployeeMapper.mapToEmployeeDto(employee);
 
         APIResponseDto apiResponseDto = new APIResponseDto();
         apiResponseDto.setEmployee(employeeDto);
